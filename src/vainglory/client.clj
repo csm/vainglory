@@ -223,12 +223,12 @@
                                                        (if (= "array" (-> mspec :parameters first :schema :type))
                                                          (if-let [path (some-> mspec :parameters first :schema :items (get "$ref") (string/split #"/") rest)]
                                                            `(s/def ~mspec-id (s/coll-of ~(keyword (str api-ns \. (string/join \. (butlast path))) (last path))))
-                                                           (do
-                                                             (prn {:path _path :method _method :mspec mspec})
-                                                             (throw (UnsupportedOperationException. "not implemented (explicit array)"))))
-                                                         (do
-                                                           (prn {:path _path :method _method :mspec mspec})
-                                                           (throw (UnsupportedOperationException. "not implemented (explicit schema)")))))]
+                                                           (if-let [enums (some-> mspec :parameters first :schema :items :enum)]
+                                                             `(s/def ~mspec-id #{~@enums})
+                                                             `(s/def ~mspec-id ~(type->pred [(-> mspec :parameters first :schema :items :type) (-> mspec :parameters first :schema :item :format)]))))
+                                                         (if-let [enums (some-> mspec :parameters first :schema :enum)]
+                                                           `(s/def ~mspec-id #{~@enums})
+                                                           `(s/def ~mspec-id ~(type->pred [(-> mspec :parameters first :schema :type) (-> mspec :parameters first :schema :format)])))))]
                                             (if (-> mspec :parameters first :required)
                                               [spec]
                                               [`(s/nilable ~spec)]))
@@ -278,6 +278,18 @@
                                       (map string/capitalize)
                                       (string/join))))))))
 
+(defn compare-spec-decls
+  [d1 d2]
+  (if (keyword? (nth d1 2))
+    (if (keyword? (nth d2 2))
+      (cond (= (nth d1 1) (nth d2 2)) -1
+            (= (nth d2 1) (nth d1 2)) 1
+            :else (compare (vec d1) (vec d2)))
+      -1)
+    (if (keyword? (nth d2 2))
+      -1
+      (compare (vec d1) (vec d2)))))
+
 (defn create
   [api {:keys [conn-pool]}]
   (let [paths (->> (:paths api)
@@ -290,8 +302,8 @@
                               {}))
         api (assoc api :paths paths)
         api-id (UUID/nameUUIDFromBytes (json/write-value-as-bytes api))]
-    (doseq [spec (generate-specs* api api-id)]
-      ;(println "gen spec:" spec)
+    (doseq [spec (sort compare-spec-decls (generate-specs* api api-id))]
+      (println "gen spec:" spec)
       (eval spec))
     (->Client (or conn-pool (http/connection-pool {})) api api-id)))
 
