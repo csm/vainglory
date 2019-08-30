@@ -1,5 +1,5 @@
 (ns vainglory.async
-  (:require [vainglory.client :as vc]))
+  (:require [vainglory.impl.client :as vc]))
 
 (defn invoke
   "Invoke an asynchronous API call to a server.

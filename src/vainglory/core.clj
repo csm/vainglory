@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [jsonista.core :as json]
             [vainglory.async :as va]
-            [vainglory.client :as vc]
+            [vainglory.impl.client :as vc]
             [yaml.reader :as yaml]
             [manifold.stream :as s]
             [clojure.string :as string])
@@ -37,7 +37,9 @@
 
   Optional option map may contain the following keys:
 
-  * `:conn-pool` An aleph.http connection pool, e.g. via [[aleph.http/connection-pool]]."
+  * `:conn-pool` An aleph.http connection pool, e.g. via [[aleph.http/connection-pool]].
+  * `:api-id` An optional string to use as the identifier of this API; must be unique across
+     all clients you create. Defaults to a GUID based on the swagger spec."
   ([spec] (client spec {}))
   ([spec options]
    (vc/create spec options)))
@@ -63,36 +65,7 @@
 
   On failure, an anomaly map will be returned."
   [client arg-map]
-  (deref (s/take! (va/invoke client arg-map))))
-
-(defn- get-schema
-  [api schema-ref]
-  (let [path (->> (string/split schema-ref #"[#/]")
-                  (remove empty?)
-                  (map keyword))]
-    (get-in api path)))
-
-(declare describe-parameter)
-
-(defn- describe-schema
-  [api schema]
-  (when schema
-    (if-let [ref (get schema "$ref")]
-      (recur api (get-schema api ref))
-      (->> (:properties schema)
-           (map (fn [[prop-name prop]]
-                  [prop-name (describe-parameter api prop)]))
-           (into {})))))
-
-(defn- describe-parameter
-  [api parameter]
-  (if-let [type (:type parameter)]
-    (or (some-> parameter :format keyword)
-        (some-> parameter :enum set)
-        (some->> parameter :items (describe-parameter api))
-        (keyword type))
-    (when-let [schema (:schema parameter)]
-      (describe-schema api schema))))
+  (deref (va/invoke client arg-map)))
 
 (defn ops
   "Describe operations client supports.
@@ -106,25 +79,6 @@
   * `:summary` The summary from the swagger spec.
   * `:description` The description from the swagger spec."
   [client]
-  (into {}
-    (mapcat (fn [[_ verbs]]
-              (map (fn [[_ op]]
-                     [(keyword (:operationId op))
-                      {:request (->> (:parameters op)
-                                     (map (fn [param]
-                                            [(keyword (:name param))
-                                             (describe-parameter (:api client) param)]))
-                                     (into {}))
-                       :response (->> (:responses op)
-                                      (filter #(some? (:schema %)))
-                                      (first)
-                                      (describe-parameter (:api client)))
-                       :required (->> (:parameters op)
-                                      (filter :required)
-                                      (map :name)
-                                      (map keyword)
-                                      (vec))
-                       :summary (:summary op)
-                       :description (:description op)}])
-                   verbs))
-            (-> client :api :paths))))
+  (reduce-kv (fn [m k v]
+               (assoc m k (update v :request #(into {} (map (fn [[kk vv]] [kk (:param vv)]) %)))))
+             {} (:ops client)))
