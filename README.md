@@ -1,5 +1,8 @@
 # vainglory
 
+[![cljdoc](https://cljdoc.org/badge/com.github.csm/vainglory)](https://cljdoc.org/d/com.github.csm/vainglory/CURRENT)
+[![Clojars Project](https://img.shields.io/clojars/v/com.github.csm/vainglory.svg)](https://clojars.org/com.github.csm/vainglory)
+
 Data-driven Swagger clients.
 
 Alpha, subject to change.
@@ -29,8 +32,6 @@ Alpha, subject to change.
   (va/invoke petstore-client {:op :findPetsByStatus :request {:status ["sold"]}})
   (fn [result] ...))
 ```
-
-**EXPERIMENTAL**, and subject to change.
 
 Only supports Swagger 2.0 at the moment, and won't tell the difference
 if you feed it something else.

@@ -5,7 +5,7 @@
 (defn invoke
   "Invoke an asynchronous API call to a server.
 
-  Client should be a constructed client produced by [[vainglory.core/client]].
+  Client should be produced by [[vainglory.core/client]].
 
   Request map is the same as [[vainglory.core/invoke]]. Returns a manifold
   deferred that will yield the response. The value yielded

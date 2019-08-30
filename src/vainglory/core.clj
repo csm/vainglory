@@ -1,11 +1,10 @@
 (ns vainglory.core
+  "REST clients built from Swagger API definitions."
   (:require [clojure.java.io :as io]
             [jsonista.core :as json]
             [vainglory.async :as va]
             [vainglory.impl.client :as vc]
-            [yaml.reader :as yaml]
-            [manifold.stream :as s]
-            [clojure.string :as string])
+            [yaml.reader :as yaml])
   (:import [java.io StringWriter]))
 
 (defn- safe-keyword
@@ -47,23 +46,22 @@
 (defn invoke
   "Invoke a REST call, blocking for a response.
 
-  Client argument is a client as produced by [[client]].
+  Client should be produced with [[client]].
 
   Argument map has the following keys:
 
   * `:op` A keyword naming the operation to invoke. Required.
   * `:request` A map containing the request to pass; required based on operation -- see [[ops]] for
     a way to discover what arguments are required.
-  * `:scheme` -- :https or :http; required if no schemes are specified in the swagger spec.
+  * `:scheme` -- `:https` or `:http`; required if no schemes are specified in the swagger spec.
   * `:host` -- hostname to connect to; required if no hostname is specified in the swagger spec.
   * `:port` -- port to connect to; optional, based on scheme used.
   * `:headers` -- map of header name to value. Optional.
   * `:decode-key-fn` -- function to use to decode JSON keys; default leaves keys as is; can be
     `true` to keywordize keys, or any arbitrary 1-arg function.
 
-  Return value will either be a response map, possibly with a `:body`, on success.
-
-  On failure, an anomaly map will be returned."
+  Return value will either be a response map, possibly with a `:body`, on success,
+  or an anomaly map on failure."
   [client arg-map]
   (deref (va/invoke client arg-map)))
 

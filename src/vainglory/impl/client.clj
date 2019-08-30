@@ -369,7 +369,7 @@
     (mapcat (fn [[path verbs]]
               (map (fn [[verb op]]
                      (let [operation-id (operation-id path verb op)]
-                       (println "build-op" path verb operation-id op)
+                       ; (println "build-op" path verb operation-id op)
                        [operation-id
                         {:request (->> (:parameters op)
                                        (map (fn [param]
@@ -417,8 +417,9 @@
                               {}))
         api (assoc api :paths paths)
         api-id (or api-id (UUID/nameUUIDFromBytes (json/write-value-as-bytes api)))]
+    ; todo is there a better way to generate dynamic specs?
     (doseq [spec (sort-specs (generate-specs* api api-id))]
-      (println "gen spec:" spec)
+      ;(println "gen spec:" spec)
       (eval spec))
     (->Client (or conn-pool (http/connection-pool {})) api (build-ops api api-id) api-id)))
 
