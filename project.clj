@@ -1,4 +1,4 @@
-(defproject com.github.csm/vainglory "0.1.2"
+(defproject com.github.csm/vainglory "0.1.3-SNAPSHOT"
   :description "Data-driven clients for Swagger APIs"
   :url "https://github.com/csm/vainglory"
   :license {:name "MIT"
