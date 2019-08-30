@@ -101,7 +101,7 @@
                                  (not-empty))
                   body-data (if (and (= 1 (count body-params))
                                      (= :bytes (-> body-params first :param)))
-                              (if (or (bytes? request) (instance? InputStream request))
+                              (if (or (bytes? request) (string? request) (instance? InputStream request))
                                 request
                                 (get request (-> body-params first :name)))
                               (not-empty (select-keys request (map :name body-params))))
@@ -115,7 +115,7 @@
                                  "multipart/form-data"
                                  (cond
                                    (and (= 1 (count body-params))
-                                        (= :bytes (-> body-params first :param)))
+                                        (= :binary (-> body-params first :param)))
                                    (or (get headers "content-type") "application/octet-stream")
 
                                    (not-empty body-params)
