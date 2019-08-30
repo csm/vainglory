@@ -15,7 +15,13 @@
                  [com.arohner/uri "0.1.2"]
                  [aleph "0.4.6"]]
   :profiles {:test {:resource-paths ["test-resources"]}}
-  :plugins [[lein-codox "0.10.3"]]
-  :codox {:output-path "docs"
-          :namespaces [vainglory.core vainglory.async]}
+  :release-tasks [["vcs" "assert-committed"]
+                  ["change" "version"
+                   "leiningen.release/bump-version" "release"]
+                  ["vcs" "commit"]
+                  ["vcs" "tag"]
+                  ["deploy" "clojars"]
+                  ["change" "version" "leiningen.release/bump-version"]
+                  ["vcs" "commit"]
+                  ["vcs" "push"]]
   :repl-options {:init-ns vainglory.repl})

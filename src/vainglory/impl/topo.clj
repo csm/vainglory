@@ -2,7 +2,7 @@
 ; As such, this file is licensed under the Eclipse Public
 ; License version 1.0.
 
-(ns vainglory.impl.topo
+(ns ^:no-doc vainglory.impl.topo
   (:require [clojure.set :refer [difference intersection union]]))
 
 (def without disj)

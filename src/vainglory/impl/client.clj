@@ -1,4 +1,4 @@
-(ns vainglory.impl.client
+(ns ^:no-doc vainglory.impl.client
   "Implementation namespace, use vainglory.core in your code."
   (:require [aleph.http :as http]
             [cemerick.uri :as uri]

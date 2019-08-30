@@ -22,8 +22,17 @@ Alpha, subject to change.
 
 ; async invoke is also available
 (require '[vainglory.async :as va])
-(require 'manifold.stream)
+(require '[manifold.deferred :as d])
 
-; invoke returns a manifold stream that will yield the result from a take!
-@(manifold.stream/take! (va/invoke petstore-client {:op :findPetsByStatus :request {:status ["sold"]}}))
+; invoke returns a manifold deferred that will yield the result
+(d/chain
+  (va/invoke petstore-client {:op :findPetsByStatus :request {:status ["sold"]}})
+  (fn [result] ...))
 ```
+
+**EXPERIMENTAL**, and subject to change.
+
+Only supports Swagger 2.0 at the moment, and won't tell the difference
+if you feed it something else.
+
+Mad props: inspired by [aws-api](https://github.com/cognitect-labs/aws-api).

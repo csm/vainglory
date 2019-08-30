@@ -80,5 +80,5 @@
   * `:description` The description from the swagger spec."
   [client]
   (reduce-kv (fn [m k v]
-               (assoc m k (update v :request #(into {} (map (fn [[kk vv]] [kk (:param vv)]) %)))))
+               (assoc m k (update v :request #(into {} (map (fn [p] [(:name p) (:param p)]) %)))))
              {} (:ops client)))
